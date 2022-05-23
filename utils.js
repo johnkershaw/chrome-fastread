@@ -7,23 +7,23 @@ export let defaultAlgorithm = "- 0 1 1 2 0.4";
 
 export function fastreadifyPage() {
 
-  function parseAlgorithm(algorithm){
+  function parseAlgorithm(algorithm) {
 
     try {
       var res = {
         exclude: true,
-        sizes : [],
-        restRatio : 0.4
+        sizes: [],
+        restRatio: 0.4
       };
       let parts = algorithm.split(' ');
 
-      if (parts[0] == '+'){
+      if (parts[0] == '+') {
         res.exclude = false;
       }
 
       res.restRatio = Number(parts[parts.length - 1]);
 
-      for (var i = 1; i < parts.length - 1; i++){
+      for (var i = 1; i < parts.length - 1; i++) {
         res.sizes.push(parts[i]);
       }
       return res;
@@ -33,8 +33,8 @@ export function fastreadifyPage() {
 
       var defaultRes = {
         exclude: true,
-        sizes : [1, 1, 2],
-        restRatio : 0.4
+        sizes: [1, 1, 2],
+        restRatio: 0.4
       };
       console.log("not parsed");
       console.log(defaultRes);
@@ -43,11 +43,11 @@ export function fastreadifyPage() {
 
   }
 
-  chrome.storage.sync.get(['algorithm'], (data)=>{
+  chrome.storage.sync.get(['algorithm'], (data) => {
     var algorithm = parseAlgorithm(data.algorithm);
 
     function createStylesheet() {
-      chrome.storage.sync.get(['highlightSheet', 'restSheet'], function(data) {
+      chrome.storage.sync.get(['highlightSheet', 'restSheet'], function (data) {
         var style = document.createElement('style');
         style.type = 'text/css';
         style.id = "fastread-style-id";
@@ -99,27 +99,29 @@ export function fastreadifyPage() {
 
     function fastreadifyWord(word) {
 
-      function isCommon(word){
-          return commonWords.indexOf(word) != -1;
+      function isCommon(word) {
+        return commonWords.indexOf(word) != -1;
       }
 
-      var index = word.length-1;
+      var index = word.length - 1;
 
       var numBold = 1;
 
       if ((word.length <= 3) && algorithm.exclude) {
-        if (isCommon(word)) return word;
+        if (isCommon(word)) numBold = 0;
       }
-
-      if (index < algorithm.sizes.length){
+      else if (index < algorithm.sizes.length) {
         numBold = algorithm.sizes[index];
       }
-      else{
+      else {
 
         numBold = Math.ceil(word.length * algorithm.restRatio);
       }
 
-      return "<span class=\"fastread-highlight\">" + word.slice(0, numBold) + "</span>" + "<span class=\"fastread-rest\">" + word.slice(numBold) + "</span>";
+      let textHighlight = numBold > 0 ? ("<span class=\"fastread-highlight\">" + word.slice(0, numBold) + "</span>") : "";
+      let textRest = "<span class=\"fastread-rest\">" + word.slice(numBold) + "</span>";
+
+      return textHighlight + textRest;
     }
 
     function fastreadifyText(text) {
@@ -151,10 +153,10 @@ export function fastreadifyPage() {
       }
     }
 
-    if (hasStyleSheet()){
+    if (hasStyleSheet()) {
       deleteStyleSheet();
     }
-    else{
+    else {
       createStylesheet();
       fastreadifyNode(document.body);
     }
@@ -162,10 +164,10 @@ export function fastreadifyPage() {
 
 }
 
-export function patternsInclude(patterns, url){
+export function patternsInclude(patterns, url) {
 
-  for (var pattern of patterns){
-    if (url.match(pattern)){
+  for (var pattern of patterns) {
+    if (url.match(pattern)) {
       return true;
     }
   }
